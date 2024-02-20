@@ -1,7 +1,6 @@
 ## Main entry point for analyze_thomson scripts
 
 import functions as fn
-
 import matplotlib.pyplot as plt
 
 def main():
@@ -19,8 +18,11 @@ def main():
     plt.plot(wl,spectrum,'-')
     plt.xlabel('Wavelength')
     plt.ylabel('Intensity')
+    ax = plt.gca()
+    ax.set_box_aspect(1)
     plt.show()
 
 
 if __name__ == '__main__':
     main()
+    
