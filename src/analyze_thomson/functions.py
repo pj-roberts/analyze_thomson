@@ -1,7 +1,9 @@
 ### Parker J. Roberts - 2024-02-19
 ### Functions for analyze_thomson package
 
+import csv
 import numpy as np
+
 import constants as c
 
 def add_one(number):
@@ -10,7 +12,7 @@ def add_one(number):
 
 def parse_lightfield_raw(filepath):
     """Load data from lightfield raw images stored as .csv.
-        !!! write actual code for this
+        These are the detector/camera image files.
     
     Args:
         filepath (str): location of data file
@@ -19,10 +21,57 @@ def parse_lightfield_raw(filepath):
         wl (arr): (c,) array of wavelengths
         frame (arr): (s,r,c) array of intensity values (shot, row, column)
     """
-    print(filepath)
-    wl = np.zeros((50,1))
-    frame = np.zeros((50,50))
-    return wl, frame
+    
+    # Initialize arrays
+    startrows = []
+    endrows = []
+    wls = 0
+
+    # Loop once: detect array dimensions & preallocate
+    with open(filepath) as csvfile:
+        filereader = csv.reader(csvfile)
+        for ii,row in enumerate(filereader):
+            if row[0] == '0': # detect start of ccd image
+                startrows.append(ii)
+            if row[0] == 'End Region 1': # detect end of image
+                # !!! If csvread doesn't see the strings, this is risky!
+                endrows.append(ii-1)
+            if (row[0] == 'Wavelength') and (wls == 0):
+                wls = row[1:-1]
+
+    # Get array sizes
+    nframes = len(startrows)
+    nwl = len(wls)
+    nrows = endrows[0] - startrows[0] + 1
+
+    # Convert wavelength strings to floats
+    wls = [float(ii) for ii in wls]
+
+    # preallocate frames array
+    frames = np.zeros((nframes,nrows,nwl))
+    framecount = 0
+    rowcount = 0
+
+    # Loop again: detect array dimensions & preallocate
+    with open(filepath) as csvfile:
+        filereader = csv.reader(csvfile)
+        for ii,row in enumerate(filereader):
+            if framecount < nframes: # End loop when loaded all frames
+                if ii == startrows[framecount]:
+                    # Start counting distance from startrow == matrix row
+                    frames[framecount,rowcount,:] = row[1:-1]
+                    rowcount += 1
+
+                elif startrows[framecount] < ii < endrows[framecount]:
+                    frames[framecount,rowcount,:] = row[1:-1]
+                    rowcount += 1
+                    
+                elif ii == endrows[framecount]:
+                    frames[framecount,rowcount,:] = row[1:-1]
+                    framecount += 1
+                    rowcount = 0
+
+    return wls, frames
 
 
 def generate_dataset(ne,Te,ue,noise):
