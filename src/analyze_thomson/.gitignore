@@ -1,0 +1,4 @@
+# Ignore files in pycache
+src/analyze_thomson/__pycache__/
+
+# ignore gitignore
