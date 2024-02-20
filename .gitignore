@@ -49,3 +49,6 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# Other added files
+src/analyze_thomson/__pycache__/functions.cpython-311.pyc
