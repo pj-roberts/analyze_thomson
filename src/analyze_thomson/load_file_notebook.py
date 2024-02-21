@@ -60,19 +60,8 @@ plt.colorbar()
 plt.show()
 
 #%%
-spectrum = np.mean(mean_frame,0)
 
+spectrum = fn.compute_mean_spectrum(frames)
 
-# Generate Figure/Axis
-fig = plt.figure(figsize=(3.37,1.69))
-ax = fig.add_axes([0.22,0.22,0.7,0.7])
-# ax.set_box_aspect(1.0)
-
-plt.plot(wls,spectrum,linewidth=1)
-plt.xlabel('Wavelength (nm)')
-plt.ylabel('Counts')
-plt.ylim((-0.1,4))
-plt.xlim((532,537))
-plt.show()
-
+fig, ax = fn.plot_spectrum(wls,spectrum)
 

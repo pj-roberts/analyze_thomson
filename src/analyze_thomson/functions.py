@@ -3,11 +3,9 @@
 
 import csv
 import numpy as np
+import matplotlib.pyplot as plt
 
 import constants as c
-
-def add_one(number):
-    return number + 1
 
 
 def parse_lightfield_raw(filepath):
@@ -52,7 +50,7 @@ def parse_lightfield_raw(filepath):
     framecount = 0
     rowcount = 0
 
-    # Loop again: detect array dimensions & preallocate
+    # Loop again: transfer frames to array structure
     with open(filepath) as csvfile:
         filereader = csv.reader(csvfile)
         for ii,row in enumerate(filereader):
@@ -72,6 +70,23 @@ def parse_lightfield_raw(filepath):
                     rowcount = 0
 
     return wls, frames
+
+
+def compute_mean_spectrum(frames):
+    """Compute the average spectrum corresponding to a matrix of CCD
+      images (output of parse_lightfield_raw). Assumes the spectrum is 
+      uniform w.r.t. row height, i.e. no spatial resolution on detector.
+
+    Args:
+        frames (arr): (shot,row,wavelength) array of CCD images
+
+    Returns:
+        spectrum (arr): 1D array (wavelength,) of average counts per pixel.
+    """
+    mean_frame = np.mean(frames,0)
+    spectrum = np.mean(mean_frame,0)
+
+    return spectrum
 
 
 def generate_dataset(ne,Te,ue,noise):
@@ -129,3 +144,30 @@ def wl2velocity(wls):
     """
     velocities = c.c*(c.lambda_0/wls - 1)/2/np.sin(c.theta/2)
     return velocities
+
+def plot_spectrum(wls,spectrum):
+      """Generate line plot of spectrum
+
+      Args:
+          wl (_type_): _description_
+          spectrum (_type_): _description_
+
+      Returns:
+          _type_: _description_
+      """
+
+      # Generate Figure/Axis
+      fig = plt.figure(figsize=(3.37,1.69))
+      ax = fig.add_axes([0.22,0.22,0.7,0.7])
+      # ax.set_box_aspect(1.0)
+
+      # Generate Plot
+      plt.plot(wls,spectrum,linewidth=1,color='k')
+      plt.xlabel('Wavelength (nm)')
+      plt.ylabel('Counts')
+      plt.ylim((-0.1,4))
+      plt.xlim((526,538))
+      plt.xticks(np.arange(526,540,2))
+      plt.show()
+      
+      return fig,ax
