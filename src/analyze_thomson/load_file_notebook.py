@@ -13,6 +13,21 @@ import matplotlib as mpl
 
 import functions as fn
 
+#%% Initialize matplotlib
+
+# Font Settings
+mpl.rcParams.update({'font.size': 12})  # Adjust font size as needed
+mpl.rcParams.update({'font.family': 'Arial'})  # Choose appropriate font
+
+# Axis settings
+mpl.rcParams['axes.linewidth'] = 2.0
+mpl.rcParams['xtick.major.width'] = 2.0
+mpl.rcParams['ytick.major.width'] = 2.0
+
+# Line/Color Settings
+mpl.rcParams['lines.linewidth'] = 2.0
+
+
 #%% Settings/Initialize
 
 # Where to look for data
@@ -40,14 +55,24 @@ plt.show()
 
 mean_frame = np.mean(frames,0)
 
-plt.contourf(mean_frame,levels=np.linspace(-10,20,20))
+plt.contourf(mean_frame,levels=np.linspace(0,5,20))
 plt.colorbar()
 plt.show()
 
 #%%
 spectrum = np.mean(mean_frame,0)
 
-plt.plot(wls,spectrum)
+
+# Generate Figure/Axis
+fig = plt.figure(figsize=(3.37,1.69))
+ax = fig.add_axes([0.22,0.22,0.7,0.7])
+# ax.set_box_aspect(1.0)
+
+plt.plot(wls,spectrum,linewidth=1)
+plt.xlabel('Wavelength (nm)')
+plt.ylabel('Counts')
+plt.ylim((-0.1,4))
+plt.xlim((532,537))
 plt.show()
 
 

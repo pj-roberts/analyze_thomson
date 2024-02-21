@@ -22,10 +22,6 @@ mpl.rcParams['ytick.major.width'] = 2.0
 # Line/Color Settings
 mpl.rcParams['lines.linewidth'] = 2.0
 
-#%% Set Filepath
-
-filepath = "C:\\Users\\pjrob\\Desktop\\"
-
 #%% Generate datset
 
 ne = 1e16
