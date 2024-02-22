@@ -5,9 +5,9 @@
 
 #%% Load Packages
 
-import csv
-import numpy as np
+# import csv
 # import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
@@ -31,10 +31,10 @@ mpl.rcParams['lines.linewidth'] = 2.0
 #%% Settings/Initialize
 
 # Where to look for data
-data_folder = 'C:\\Users\\pjrob\\Documents\\Research\\' +\
+datafolder = 'C:\\Users\\pjrob\\Documents\\Research\\' +\
       'University of Michigan\\2023\\ITS CTF\\Raw Data\\Processed Data\\'
 
-filepath = data_folder + '078_raman.csv'
+filepath = datafolder + '043_its.csv'
 
 #%% Load Data
 
@@ -45,23 +45,29 @@ wls, frames = fn.parse_lightfield_raw(filepath) # Use imported version
 
 #%% Visualize raw frames
 
-plt.plot(wls,np.transpose(frames[1,:,:]))
-plt.show()
+# plt.plot(wls,np.transpose(frames[1,:,:]))
+# plt.show()
 
-plt.contourf(frames[-2,:,:])
-plt.show()
+# plt.contourf(frames[-2,:,:])
+# plt.show()
 
 #%% Compute mean frame and plot resulting spectrum
 
-mean_frame = np.mean(frames,0)
+# mean_frame = np.mean(frames,0)
 
-plt.contourf(mean_frame,levels=np.linspace(0,5,20))
-plt.colorbar()
-plt.show()
+# plt.contourf(mean_frame,levels=np.linspace(-5,5,20))
+# plt.colorbar()
+# plt.show()
 
-#%%
+# spectrum = fn.compute_mean_spectrum(frames)
 
-spectrum = fn.compute_mean_spectrum(frames)
+# fig, ax = fn.plot_spectrum(wls,spectrum)
 
-fig, ax = fn.plot_spectrum(wls,spectrum)
+#%% Save data matrix as compact file
 
+savepath_frames = filepath[0:-4] + '_frames_test.npz'
+savepath_wls = filepath[0:-4] + '_wls_test.npz'
+np.savez_compressed(savepath_frames,frames=frames)
+# np.savez_compressed(savepath_wls,wls)
+
+print('done')

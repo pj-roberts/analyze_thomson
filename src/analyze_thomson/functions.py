@@ -89,6 +89,38 @@ def compute_mean_spectrum(frames):
     return spectrum
 
 
+def count_photons_simple(frames,pct,crt):
+      """Counts photon events on the array of CCD images frames via 
+        a thresholding algorithm (sets value to 1 if > pct, 0 if < pct).
+        Also has option to remove cosmic rays (detections > crt set to
+        zero) of crt > 0.
+
+      Args:
+          frames (arr): CCD image matrix, (shot, row, wavelength)
+          pct (float): photon counting threshold
+          crt (float): cosmic ray threshold
+          rad (float): radius (max 1 detection w/in rad pixels)
+
+      Returns:
+          frames_pc (arr): (wavelength,) histogram vector, value 
+            corresponds to # of counts at that wavelength
+      """
+      # First pass: ignore radius and just logically index
+      frames_pc = frames.copy()
+
+      # Detect cosmic rays
+      if crt > 0:
+            crt_idx = frames_pc > crt
+            frames_pc[crt_idx] = 0
+      
+      # Detect photons
+      pc_idx = frames_pc > pct
+      frames_pc[pc_idx] = 1
+      frames_pc[np.logical_not(pc_idx)] = 0            
+
+      return frames_pc
+
+
 def generate_dataset(ne,Te,ue,noise):
     """Simulate Thomson spectrum based on 1D Maxwellian distribution.
         For testing analysis scripts and robustness to noise. For
