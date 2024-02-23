@@ -113,8 +113,14 @@ ax = fig.add_axes([0.1,0.1,0.6,0.6])
 ax.set_box_aspect(1.0)
 
 # Contour plot of counted mean frame
-plt.contourf(np.mean(frames_pc*1000,0),levels=np.linspace(0,1,20))
+# plt.contourf(np.mean(frames_pc*1000,0),levels=np.linspace(0,1,20))
+plt.contourf(np.mean(frames_pc*1000,0))
 plt.colorbar(fraction=0.045,ticks=np.linspace(0,1,5))
 plt.savefig(plotfolder +  filename[0:-4] + '_mean_frame_pc.png', format='png', dpi=600)
 # plt.show()
 plt.close()
+
+#%% 
+# plt.imshow(frames[23,:,:])
+# plt.colorbar()
+# plt.show()

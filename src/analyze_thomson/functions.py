@@ -36,7 +36,8 @@ def parse_lightfield_raw(filepath):
                 # !!! If csvread doesn't see the strings, this is risky!
                 endrows.append(ii-1)
             if (row[0] == 'Wavelength') and (wls == 0):
-                wls = row[1:-1]
+                wls = row[1:]
+
 
     # Get array sizes
     nframes = len(startrows)
@@ -58,15 +59,15 @@ def parse_lightfield_raw(filepath):
             if framecount < nframes: # End loop when loaded all frames
                 if ii == startrows[framecount]:
                     # Start counting distance from startrow == matrix row
-                    frames[framecount,rowcount,:] = row[1:-1]
+                    frames[framecount,rowcount,:] = row[1:]
                     rowcount += 1
 
                 elif startrows[framecount] < ii < endrows[framecount]:
-                    frames[framecount,rowcount,:] = row[1:-1]
+                    frames[framecount,rowcount,:] = row[1:]
                     rowcount += 1
                     
                 elif ii == endrows[framecount]:
-                    frames[framecount,rowcount,:] = row[1:-1]
+                    frames[framecount,rowcount,:] = row[1:]
                     framecount += 1
                     rowcount = 0
 
