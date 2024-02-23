@@ -4,6 +4,7 @@
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 import constants as c
 
@@ -176,6 +177,30 @@ def wl2velocity(wls):
     """
     velocities = c.c*(c.lambda_0/wls - 1)/2/np.sin(c.theta/2)
     return velocities
+
+# Plotting functions
+
+def initialize_plotting():
+    """
+    Set nice-looking publication-ready linewidths and fonts
+    """
+
+    # Font Settings
+    mpl.rcParams.update({'font.size': 12})  # Adjust font size as needed
+    mpl.rcParams.update({'font.family': 'Arial'})  # Choose appropriate font
+
+    # Axis settings
+    mpl.rcParams['axes.linewidth'] = 2.0
+    mpl.rcParams['xtick.major.width'] = 2.0
+    mpl.rcParams['ytick.major.width'] = 2.0
+    # plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
+    # plt.rcParams['axes.xmargin'] = 0
+    # plt.rcParams['axes.ymargin'] = 0
+
+
+    # Line/Color Settings
+    mpl.rcParams['lines.linewidth'] = 2.0
+
 
 def plot_spectrum(wls,spectrum):
       """Generate line plot of spectrum
