@@ -123,6 +123,86 @@ def count_photons_simple(frames,pct,crt):
       return frames_pc
 
 
+def count_photons_mask(frames,pct,crt,rad,crrad):
+      """Counts photon events on the array of CCD images frames via 
+        a thresholding algorithm (sets value to 1 if >= pct, 0 if < pct).
+        Also has option to remove cosmic rays (detections > crt set to
+        zero) of crt > 0.
+
+        This version of the function processes the points on each frame 
+        in descending order of intensity, masking points within "rad" of
+        a detection. This ensures the most intense point is counted as 
+        a single photon, but gets rid of blooming so that the statistics 
+        represent the actual number of photons detected. However, the 
+        resulting data is more discrete and needs smoothing.
+
+        !!! A similar masking could be added for the CR detections.
+
+      Args:
+          frames (arr): CCD image matrix, (shot, row, wavelength)
+          pct (float): photon counting threshold
+          crt (float): cosmic ray threshold
+          rad (float): radius (radius for masking nearby detections)
+          crrad (float): radius (radius for masking nearby detections)
+
+      Returns:
+          spectrum_pc (arr): (wavelength,) histogram vector, value\
+              corresponds to # of counts at that wavelength
+      """
+
+      # Store frame shape in memory
+      frame_shape = np.shape(frames) 
+
+      # Preallocate histogram for storing counts
+      spectrum_pc = np.zeros((frame_shape[2],))
+
+      frames_pc = frames.copy()
+
+      # Detect cosmic rays
+      if crt > 0:
+            crt_idx = frames_pc > crt
+            frames_pc[crt_idx] = 0
+      
+      # First, set all pixels below the threshold to zero
+      frames_pc[frames_pc < pct] = 0
+
+      for ii in range(frame_shape[0]):  # for each shot:
+            frame = frames_pc[ii,:,:]  # get this frame
+            frame_vec = np.ravel(frame)  # represent as vector
+            last_max = 2  # init variable to track recent max value
+            while last_max > 1:
+
+                  # !!! Consider making the following a function which 
+                   # can be reused for masking the CRT points with a 
+                   # different radius.
+
+                  # Get maximum unchecked pixel
+                  max_idx = np.argmax(frame_vec)
+                  last_max = np.max(frame_vec)
+
+                  # Get matrix indices of maximum in frame array
+                  frame_idx = np.unravel_index(max_idx,frame_shape[1:])
+
+                  # Mask out nearby pixels in a pixel square w side rad
+                  mask_row_min = np.max((0,frame_idx[0] - rad))
+                  mask_row_max = np.min((frame_shape[1],frame_idx[0] + rad))
+                  mask_col_min = np.max((0,frame_idx[1] - rad))
+                  mask_col_max = np.min((frame_shape[2],frame_idx[1] + rad))
+                  for row_idx in range(mask_row_min,mask_row_max):
+                        for col_idx in range(mask_col_min,mask_col_max):
+                              mask_idx = np.ravel_multi_index(\
+                                    (row_idx,col_idx),frame_shape[1:])
+                              frame_vec[mask_idx] = 0
+
+                  # Count detection at maximum
+                  # frame_vec[max_idx] = 1
+                  spectrum_pc[frame_idx[1]] += 1
+
+      spectrum_pc /= frame_shape[0]    
+
+      return spectrum_pc
+
+
 def generate_dataset(ne,Te,ue,noise):
     """Simulate Thomson spectrum based on 1D Maxwellian distribution.
         For testing analysis scripts and robustness to noise. For
