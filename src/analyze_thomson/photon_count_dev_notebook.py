@@ -39,24 +39,25 @@ savefolder = 'C:\\Users\\pjrob\\Documents\\Research\\' +\
 
 plotfolder = savefolder + 'Plots\\'
 
-# Photon count settings 
-pct = 40
-crt = 0
-rad = 5
-crrad = 10
-
 #%% Load Data & count photons
 
 # Import Frames using parsing function
 wls, frames = fn.parse_lightfield_raw(filepath) # Use imported version
 
-#%% Count photons from 2D frames
+#%% 
+# Count photons from 2D frames
+
+# Photon count settings 
+pct = 50
+crt = 0
+rad = 5
+crrad = 10
 
 spectrum_pc = fn.count_photons_mask(frames,pct,crt,rad,crrad)
 
 # frames_pc = fn.count_photons_rad(frames,pct,crt)
 
-#%% Bin over pixel columns to compute mean spectrum
+#%% Bin over pixel columns to compute mean spectrum      
 
 # Bin over rows/shots
 spectrum = np.sum(np.mean(frames,0),0) # Mean shot, sum each column
@@ -92,3 +93,13 @@ plt.ylabel('Counts')
 plt.savefig(plotfolder +  filename[0:-4] + '_spectrum_pc.pdf', format='pdf')
 plt.show()
 # plt.close()
+
+#%%
+
+
+# plt.imshow(frames[ii,:,:])
+# ii += 1
+# plt.colorbar()
+
+plt.imshow(np.mean(frames,1))
+plt.colorbar()

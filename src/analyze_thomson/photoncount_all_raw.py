@@ -37,7 +37,7 @@ savefolder = 'C:\\Users\\pjrob\\Documents\\Research\\' +\
 plotfolder = savefolder + 'Plots\\'
 
 # Photon count settings 
-pct = 40
+# pct set conditionally within loop, based on number of frames
 crt = 0
 rad = 5
 crrad = 0
@@ -48,7 +48,7 @@ crrad = 0
 files = [f for f in listdir(datafolder) if isfile(join(datafolder, f))]
 
 # Loop through list of files, count photons, and plot/save
-for ii in tqdm(range(len(files))):
+for ii in tqdm(range(len(files))): # This iterable displays a prog bar
 
       filename = files[ii]
       filepath = datafolder + filename
@@ -60,6 +60,13 @@ for ii in tqdm(range(len(files))):
       spectrum = np.mean(np.mean(frames,0),0)
       savename_spectrum = savefolder + filename[0:-4] + '_spectrum.npy'
       np.save(savename_spectrum,spectrum)
+
+      # Determine photon counting threshold based on shots per frame
+      nframes = np.shape(frames)[0]
+      if nframes > 500:
+            pct = 200
+      else:
+            pct = 50
 
       # Count photons from 2D frames and save
       spectrum_pc = fn.count_photons_mask(frames,pct,crt,rad,crrad)
@@ -82,6 +89,7 @@ for ii in tqdm(range(len(files))):
       plt.ylabel('Counts')
 
       # plt.tight_layout()
-      plt.savefig(plotfolder +  filename[0:-4] + '_spectrum_pc.pdf', format='pdf')
+      plt.savefig(plotfolder +  filename[0:-4] + '_spectrum_pc.pdf',\
+                   format='pdf')
       # plt.show()
       plt.close()
