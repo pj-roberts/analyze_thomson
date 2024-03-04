@@ -1,6 +1,6 @@
 ### Parker J. Roberts - 2024-02-19
 ### Functions for analyze_thomson package
-
+#%%
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
@@ -203,6 +203,30 @@ def count_photons_mask(frames,pct,crt,rad,crrad):
     spectrum_pc /= frame_shape[0]    
 
     return spectrum_pc
+
+
+def mask_filter(wl,v,its,filt_rad):
+      """Returns masked data not including points within filt_rad of 
+      532 nm.
+
+      Args:
+          wl (ndarray): wavelength vector
+          v (ndarray): velocity vector
+          its (ndarray): signal vector
+          filt_rad (float): radius around 532 nm to exclude points
+
+      Returns:
+          wl_mask (ndarray): masked wavelength vector
+          v_mask (ndarray): masked velocity vector
+          its_mask (ndarray): masked signal vector
+      """
+      filt_min = 532 - filt_rad
+      filt_max = 532 + filt_rad
+      mask_idx = (wl < filt_min) | (wl > filt_max)
+      wl_mask = wl[mask_idx]
+      v_mask = v[mask_idx]
+      its_mask = its[mask_idx]
+      return wl_mask, v_mask, its_mask
 
 
 def generate_dataset(ne,Te,ue,noise):

@@ -48,7 +48,7 @@ crrad = 0
 files = [f for f in listdir(datafolder) if isfile(join(datafolder, f))]
 
 # Loop through list of files, count photons, and plot/save
-for ii in tqdm(range(len(files))): # This iterable displays a prog bar
+for ii in tqdm(range(70)): # This iterable displays a prog bar !!! Remove '70' for 'len(files)
 
       filename = files[ii]
       filepath = datafolder + filename
@@ -76,6 +76,13 @@ for ii in tqdm(range(len(files))): # This iterable displays a prog bar
       # Save wavelengths
       savename_wl = savefolder + filename[0:-4] + '_wl.npy'
       np.save(savename_wl,wls)
+      
+      # Save all to csv
+      savename_csv = savefolder + filename[0:-4] + '_spectrum.csv'
+      header_csv = 'Wavelength (nm),Mean Spectrum,Photon Counts'
+      csv_arr = np.column_stack((wls,spectrum,spectrum_pc))
+      np.savetxt(savename_csv,csv_arr,delimiter=',',header=header_csv,\
+                 comments='')
 
       # Generate Figure/Axis for line plot
       fig = plt.figure(figsize=(3.37,2))

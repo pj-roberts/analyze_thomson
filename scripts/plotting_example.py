@@ -33,7 +33,7 @@ wl,spectrum = fn.generate_dataset(ne,Te,u,noise)
 #%%  Plot resulting spectrum
 
 # Generate Figure/Axis
-fig = plt.figure(figsize=(3.7,3.7))
+fig = plt.figure(figsize=(3.37,3.37))
 ax = fig.add_axes([0.22,0.22,0.7,0.7])
 ax.set_box_aspect(1.0)
 
