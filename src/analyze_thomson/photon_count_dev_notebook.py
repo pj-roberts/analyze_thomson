@@ -30,7 +30,7 @@ fn.initialize_plotting()
 datafolder = 'C:\\Users\\pjrob\\Documents\\Research\\' +\
       'University of Michigan\\2023\\ITS CTF\\Raw Data\\Processed Data\\'
 
-filename = '011_its.csv'
+filename = '043_its.csv'
 filepath = datafolder + filename
 
 savefolder = 'C:\\Users\\pjrob\\Documents\\Research\\' +\
@@ -48,7 +48,7 @@ wls, frames = fn.parse_lightfield_raw(filepath) # Use imported version
 # Count photons from 2D frames
 
 # Photon count settings 
-pct = 50
+pct = 180
 crt = 0
 rad = 5
 crrad = 10
@@ -85,6 +85,7 @@ ax = fig.add_axes([0.3,0.3,0.6,0.6])
 
 # Line plot of spectrum
 plt.plot(wls,spectrum_pc,linewidth=1,color='k')
+plt.ylim((-0.001,0.01))
 
 plt.xlabel('Wavelength (nm)')
 plt.ylabel('Counts')

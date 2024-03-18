@@ -5,6 +5,7 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import pandas as pd
 
 import constants as c
 
@@ -32,20 +33,27 @@ def parse_lightfield_raw(filepath):
         for ii,row in enumerate(filereader):
             if row[0] == '0': # detect start of ccd image
                 startrows.append(ii)
+                rowlen = len(row) - 1
             if row[0] == 'End Region 1': # detect end of image
                 # !!! If csvread doesn't see the strings, this is risky!
                 endrows.append(ii-1)
             if (row[0] == 'Wavelength') and (wls == 0):
                 wls = row[1:]
 
+    # Handle case where wavelengths are binned and there is no
+    # wavelength information
+    if wls == 0:
+        nwl = rowlen
+        wls = np.linspace(0,nwl-1,nwl)
+    else:
+        nwl = len(wls)
 
     # Get array sizes
     nframes = len(startrows)
-    nwl = len(wls)
     nrows = endrows[0] - startrows[0] + 1
 
     # Convert wavelength strings to floats
-    wls = [float(ii) for ii in wls]
+    wls = np.array([float(ii) for ii in wls])
 
     # preallocate frames array
     frames = np.zeros((nframes,nrows,nwl))
@@ -53,23 +61,41 @@ def parse_lightfield_raw(filepath):
     rowcount = 0
 
     # Loop again: transfer frames to array structure
-    with open(filepath) as csvfile:
-        filereader = csv.reader(csvfile)
-        for ii,row in enumerate(filereader):
-            if framecount < nframes: # End loop when loaded all frames
-                if ii == startrows[framecount]:
-                    # Start counting distance from startrow == matrix row
-                    frames[framecount,rowcount,:] = row[1:]
-                    rowcount += 1
+    # Handle case for single-row frames:
 
-                elif startrows[framecount] < ii < endrows[framecount]:
-                    frames[framecount,rowcount,:] = row[1:]
-                    rowcount += 1
-                    
-                elif ii == endrows[framecount]:
-                    frames[framecount,rowcount,:] = row[1:]
-                    framecount += 1
-                    rowcount = 0
+    if nrows == 1:
+        # Get 1D Binned Spectra
+        with open(filepath) as csvfile:
+            filereader = csv.reader(csvfile)
+            for ii,row in enumerate(filereader):
+                if framecount < nframes: # End loop when loaded all frames
+                    if ii == startrows[framecount]:
+                        # Start counting distance from startrow == matrix row
+                        frames[framecount,rowcount,:] = row[1:]
+                        framecount += 1
+
+    else:
+        # Get 2D frame
+        with open(filepath) as csvfile:
+            filereader = csv.reader(csvfile)
+            for ii,row in enumerate(filereader):
+                if framecount < nframes: # End loop when loaded all frames
+                    if ii == startrows[framecount]:
+                        # Start counting distance from startrow == matrix row
+                        frames[framecount,rowcount,:] = row[1:]
+                        rowcount += 1
+
+                    elif startrows[framecount] < ii < endrows[framecount]:
+                        frames[framecount,rowcount,:] = row[1:]
+                        rowcount += 1
+                        
+                    elif ii == endrows[framecount]:
+                        frames[framecount,rowcount,:] = row[1:]
+                        framecount += 1
+                        rowcount = 0
+
+    # For spectra, reduce to 2D 
+    frames = np.squeeze(frames)
 
     return wls, frames
 
@@ -203,6 +229,66 @@ def count_photons_mask(frames,pct,crt,rad,crrad):
     spectrum_pc /= frame_shape[0]    
 
     return spectrum_pc
+
+
+def subtract_bg_concurrent(frames):
+    """Perform background subtraction when background frames are taken
+      between laser frames, e.g. 20 Hz acquisition of 10 Hz laser pulses.
+      Does not assume that the first frame is bg or signal - instead, 
+      inverts output if area under curve is negative.
+
+      This code takes the simple mean, but could be updated to allow 
+      photon counting.
+
+    Args:
+        frames (float array): frame matrix with alternating signal, bg
+        in first index
+
+    Returns:
+        net_spec: mean spectrum (its - pbg) 
+    """
+    
+    frames_its = frames[::2,:]
+    frames_pbg = frames[1::2,:]
+
+    mean_its = np.mean(frames_its,0)
+    mean_pbg = np.mean(frames_pbg,0)
+
+    net_spec = mean_its - mean_pbg
+
+    # Correct for switch in signal vs background frame order
+    norm = sum(net_spec)
+    net_spec = norm/abs(norm)*net_spec
+
+    return net_spec
+
+
+def load_spectrum(filenum,spectrafolder):
+      """Use pandas dataframe to load photon count spectrum and bg from .csv
+
+      Args:
+          filenum (int): shot number below 1000
+          spectrafolder (str): folder from which to read spectra
+
+      Returns:
+          wl (ndarray): Wavelength vector
+          its_pc (ndarray): Thomson photon count vector
+          pbg_pc (ndarray): Thomson photon count vector
+      """
+      # Generate Filename from number
+      filename_its = f'{filenum:03.0f}_its_spectrum.csv'
+      filename_pbg = f'{filenum:03.0f}_pbg_spectrum.csv'
+
+      # Load data into dataframe 
+      df_its = pd.read_csv(spectrafolder + filename_its) # incoherent Thomson
+      df_pbg = pd.read_csv(spectrafolder + filename_pbg) # plasma background
+
+      # Extract columns as np arrays
+      wl = df_its.loc[:,'Wavelength (nm)'].values
+      its_pc = df_its.loc[:,'Photon Counts'].values
+      pbg_pc = df_pbg.loc[:,'Photon Counts'].values
+
+      return wl,its_pc,pbg_pc
 
 
 def mask_filter(wl,v,its,filt_rad):

@@ -64,7 +64,7 @@ for ii in tqdm(range(70)): # This iterable displays a prog bar !!! Remove '70' f
       # Determine photon counting threshold based on shots per frame
       nframes = np.shape(frames)[0]
       if nframes > 500:
-            pct = 200
+            pct = 180
       else:
             pct = 50
 
